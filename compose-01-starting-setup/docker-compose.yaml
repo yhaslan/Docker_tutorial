@@ -1,0 +1,47 @@
+version: "3.8"
+services:
+  backend:
+    build: ./backend
+    #the previous syntax is enough but if your file is not named Dockerfile use the longer form:
+    #build:
+    #  context: ./backend
+    #  dockerfile: Dockerfile
+    #  args: #in case your dockerfile use ARGs
+    #    - key=value 
+    ports:
+      - "80:80"
+    volumes:
+      - logs:/app/logs
+      - ./backend:/app #bindmount
+      #notice here we used a relative path for bindmount
+      - /app/node_modules #anonymous volume
+    env_file:
+      - ./env/backend.env
+    depends_on:
+      - mongodb
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+  mongodb:
+    image: mongo  
+    volumes:
+      - data:/data/db
+    #environment:
+      #MONGO_INITDB_ROOT_USERNAME: yagmur
+      # - MONGO_INITDB_ROOT_USERNAME=yagmur #boyle de gosterebilirsin
+      #MONGO_INITDB_ROOT_PASSWORD: example 
+
+      #if you wanna move your env vars out of this compose file; create a env folder, then add env_file option here
+    env_file:
+      - ./env/mongo.env
+
+volumes:
+  data:
+  logs:
